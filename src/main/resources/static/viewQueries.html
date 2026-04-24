@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>View Queries - Paper Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f1a; --surface: #1a1a2e; --card: #16213e;
+    --blue: #4fc3f7; --teal: #00e5cc; --red: #e94560;
+    --green: #10b981; --orange: #f59e0b;
+    --text: #e0e0e0; --muted: #8892a4; --border: rgba(79,195,247,0.15);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .navbar { background: rgba(22,33,62,0.96); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 62px; position: sticky; top: 0; z-index: 100; }
+  .navbar-brand { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+  .navbar-brand .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .navbar-links { display: flex; align-items: center; gap: 4px; }
+  .navbar-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; transition: color 0.2s; }
+  .navbar-links a:hover { color: var(--text); background: rgba(79,195,247,0.08); }
+  .navbar-links a.active { color: var(--blue); background: rgba(79,195,247,0.1); }
+  .navbar-links a.logout { color: var(--red); border: 1px solid rgba(233,69,96,0.28); margin-left: 8px; }
+  .main { max-width: 1060px; margin: 0 auto; padding: 44px 24px; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+  .page-header h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 5px; }
+  .page-header p { color: var(--muted); font-size: 14px; }
+  .top-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .filter-tabs { display: flex; gap: 6px; }
+  .tab-btn { padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .tab-btn.active-tab { background: rgba(79,195,247,0.1); border-color: rgba(79,195,247,0.3); color: var(--blue); }
+  .btn-reload { padding: 10px 22px; background: linear-gradient(135deg, var(--blue), var(--teal)); color: #0f0f1a; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14px; border: none; border-radius: 10px; cursor: pointer; }
+  .btn-reload:hover { opacity: 0.9; }
+  .stats-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 13px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+  .stat-icon { width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .stat-card h4 { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; }
+  .stat-card p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .table-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .table-top { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-top h3 { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; }
+  .table-top span { font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: rgba(79,195,247,0.07); padding: 12px 14px; font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.8px; text-align: left; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+  tbody tr:hover { background: rgba(79,195,247,0.04); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 12px 14px; font-size: 14px; vertical-align: middle; }
+  .id-chip { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: rgba(79,195,247,0.08); border: 1px solid var(--border); border-radius: 7px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .prn-text { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--blue); }
+  .q-badge { display: inline-block; padding: 3px 10px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; font-size: 12px; font-weight: 700; color: var(--orange); }
+  .subj-badge { display: inline-block; padding: 3px 10px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.2); border-radius: 20px; font-size: 12px; color: var(--blue); }
+  .msg-cell { max-width: 180px; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status-pending { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 20px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--orange); }
+  .status-resolved { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 20px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--green); }
+  .btn-resolve { padding: 6px 13px; background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); color: var(--red); font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+  .btn-resolve:hover { background: rgba(233,69,96,0.18); }
+  .btn-done { padding: 6px 13px; background: transparent; border: 1px solid rgba(16,185,129,0.2); color: var(--green); font-size: 12px; border-radius: 8px; cursor: default; }
+  .btn-delete { padding: 6px 11px; background: rgba(233,69,96,0.07); border: 1px solid rgba(233,69,96,0.18); color: var(--red); font-size: 11px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-left: 5px; transition: background 0.2s; }
+  .btn-delete:hover { background: rgba(233,69,96,0.18); }
+  .empty-state { text-align: center; padding: 64px 24px; color: var(--muted); }
+  .empty-state .icon { font-size: 44px; margin-bottom: 14px; }
+  .empty-state p { font-size: 14px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/dashboard" class="navbar-brand">
+    <span class="logo">&#9670;</span> Paper Review
+  </a>
+  <div class="navbar-links">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/marksEntry.html">Enter Marks</a>
+    <a href="/viewQueries.html" class="active">Queries</a>
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="top-row">
+    <div class="page-header">
+      <h1>Student Queries</h1>
+      <p>Review and resolve student mark queries</p>
+    </div>
+    <div class="top-actions">
+      <div class="filter-tabs">
+        <button class="tab-btn active-tab" id="tabAll"      onclick="setFilter('all')">All</button>
+        <button class="tab-btn"            id="tabPending"  onclick="setFilter('pending')">Pending</button>
+        <button class="tab-btn"            id="tabResolved" onclick="setFilter('resolved')">Resolved</button>
+      </div>
+      <button class="btn-reload" onclick="load()">&#8635; Refresh</button>
+    </div>
+  </div>
+
+  <div class="stats-strip" id="statsStrip" style="display:none">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(79,195,247,0.1)">&#128203;</div>
+      <div><h4 id="totalCount">0</h4><p>Total</p></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.1)">&#9203;</div>
+      <div><h4 id="pendingCount" style="color:var(--orange)">0</h4><p>Pending</p></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.1)">&#10003;</div>
+      <div><h4 id="resolvedCount" style="color:var(--green)">0</h4><p>Resolved</p></div>
+    </div>
+  </div>
+
+  <div id="data">
+    <div class="empty-state"><div class="icon">&#9203;</div><p>Loading queries...</p></div>
+  </div>
+</div>
+
+<script>
+  var allData       = [];
+  var currentFilter = 'all';
+  var isAdmin       = false;
+
+  var SUBJECT_MAP = { 1:'ADS', 2:'Java', 3:'TOC', 4:'DBMS' };
+
+  // Check role — admin sees Delete button
+  fetch('/api/me')
+    .then(function(r) { return r.json(); })
+    .then(function(me) {
+      isAdmin = (me.role === 'ADMIN');
+      load();
+    })
+    .catch(function() { load(); });
+
+  function isResolved(q) {
+    return (q.status || '').toLowerCase() === 'resolved';
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    document.getElementById('tabAll').className      = 'tab-btn' + (f === 'all'      ? ' active-tab' : '');
+    document.getElementById('tabPending').className  = 'tab-btn' + (f === 'pending'  ? ' active-tab' : '');
+    document.getElementById('tabResolved').className = 'tab-btn' + (f === 'resolved' ? ' active-tab' : '');
+    render(allData);
+  }
+
+  function render(data) {
+    if (!data || data.length === 0) {
+      document.getElementById('statsStrip').style.display = 'none';
+      document.getElementById('data').innerHTML =
+        '<div class="empty-state"><div class="icon">&#10003;</div><p>No queries found.</p></div>';
+      return;
+    }
+
+    var pending  = data.filter(function(q) { return !isResolved(q); }).length;
+    var resolved = data.length - pending;
+
+    document.getElementById('totalCount').textContent    = data.length;
+    document.getElementById('pendingCount').textContent  = pending;
+    document.getElementById('resolvedCount').textContent = resolved;
+    document.getElementById('statsStrip').style.display  = 'grid';
+
+    var filtered = data;
+    if (currentFilter === 'pending')  filtered = data.filter(function(q) { return !isResolved(q); });
+    if (currentFilter === 'resolved') filtered = data.filter(function(q) { return isResolved(q); });
+
+    if (filtered.length === 0) {
+      document.getElementById('data').innerHTML =
+        '<div class="empty-state"><div class="icon">&#128269;</div>' +
+        '<p>No ' + currentFilter + ' queries.</p></div>';
+      return;
+    }
+
+    var rows = '';
+    filtered.forEach(function(q) {
+      var res       = isResolved(q);
+      var subjName  = SUBJECT_MAP[q.subjectId] || ('Subject ' + q.subjectId);
+      var safePrn   = (q.prn      || '').replace(/'/g, "\\'");
+      var safeQ     = (q.question || '').replace(/'/g, "\\'");
+      var safeMsg   = (q.message  || '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+      var statusHtml  = res
+        ? '<span class="status-resolved">&#10003; Resolved</span>'
+        : '<span class="status-pending">&#9679; Pending</span>';
+
+     // Resolve button — for Pending queries; Done label for Resolved
+       var resolveBtn = res
+  ? '<span class="btn-done">&#10003; Done</span>'
+  : `<button class="btn-resolve"
+        onclick="openResolve(${q.id}, '${safePrn}', '${safeQ}', ${q.subjectId})">
+        Resolve
+     </button>`;
+      // Delete button — only shown to ADMIN
+      var deleteBtn   = isAdmin
+        ? '<button class="btn-delete" onclick="deleteQuery(' + q.id + ')" title="Delete query">&#10005;</button>'
+        : '';
+
+      rows +=
+        '<tr>' +
+          '<td><span class="id-chip">' + q.id + '</span></td>' +
+          '<td><span class="prn-text">' + (q.prn || '-') + '</span></td>' +
+          '<td><span class="subj-badge">' + subjName + '</span></td>' +
+          '<td><span class="q-badge">' + (q.question || '-') + '</span></td>' +
+          '<td><div class="msg-cell" title="' + safeMsg + '">' + safeMsg + '</div></td>' +
+          '<td>' + statusHtml + '</td>' +
+          '<td>' + resolveBtn + deleteBtn + '</td>' +
+        '</tr>';
+    });
+
+    var label = currentFilter === 'all' ? 'All Queries'
+              : currentFilter === 'pending' ? 'Pending' : 'Resolved';
+
+    document.getElementById('data').innerHTML =
+      '<div class="table-wrapper">' +
+        '<div class="table-top">' +
+          '<h3>' + label + ' Queries</h3>' +
+          '<span>' + filtered.length + ' shown &nbsp;&middot;&nbsp; ' + pending + ' pending</span>' +
+        '</div>' +
+        '<table>' +
+          '<thead><tr>' +
+            '<th>ID</th><th>PRN</th><th>Subject</th><th>Question</th>' +
+            '<th>Message</th><th>Status</th><th>Action</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>';
+  }
+
+  function load() {
+    document.getElementById('data').innerHTML =
+      '<div class="empty-state"><div class="icon">&#9203;</div><p>Loading...</p></div>';
+    fetch('/query/all')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { allData = data || []; render(allData); })
+      .catch(function() {
+        document.getElementById('data').innerHTML =
+          '<div class="empty-state"><div class="icon">&#9888;</div><p>Failed to load queries.</p></div>';
+      });
+  }
+
+  // Navigate to updateMarks.html with context in URL params
+ function openResolve(id, prn, question, subjectId) {
+  window.location.href =
+    '/updateMarks.html?id=' + id +
+    '&prn=' + encodeURIComponent(prn) +
+    '&question=' + encodeURIComponent(question) +
+    '&subjectId=' + subjectId;
+}
+
+  // Admin only: delete a query
+  function deleteQuery(id) {
+    if (!confirm('Delete query #' + id + '?\nThis cannot be undone.')) return;
+    fetch('/query/' + id, { method: 'DELETE' })
+      .then(function(r) { return r.text(); })
+      .then(function() {
+        allData = allData.filter(function(q) { return q.id !== id; });
+        render(allData);
+      })
+      .catch(function() { alert('Delete failed. Please try again.'); });
+  }
+</script>
+
+</body>
+</html>

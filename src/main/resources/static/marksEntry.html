@@ -1,0 +1,426 @@
+<!-- === src/main/resources/static/marksEntry.html === -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Enter Marks - Paper Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f1a; --card: #16213e; --surface: #1a1a2e;
+    --blue: #4fc3f7; --teal: #00e5cc; --red: #e94560;
+    --green: #10b981; --orange: #f59e0b;
+    --text: #e0e0e0; --muted: #8892a4; --border: rgba(79,195,247,0.15);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .navbar { background: rgba(22,33,62,0.96); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 62px; position: sticky; top: 0; z-index: 100; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+  .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; }
+  .nav-links a:hover { color: var(--text); background: rgba(79,195,247,0.08); }
+  .nav-links a.active { color: var(--blue); background: rgba(79,195,247,0.1); }
+  .nav-links a.logout { color: var(--red); border: 1px solid rgba(233,69,96,0.28); }
+  .main { max-width: 1100px; margin: 0 auto; padding: 44px 24px; }
+  h1 { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px 26px; margin-bottom: 26px; }
+  .panel-title { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 18px; }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 14px; align-items: end; }
+  .field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; }
+  .field select, .field input[type="number"] {
+    width: 100%; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; appearance: none;
+    transition: border-color 0.2s;
+  }
+  .field select:focus, .field input:focus { border-color: var(--blue); }
+  .field select option, .field input::placeholder { background: #1a1a2e; color: var(--muted); }
+  .btn-load { padding: 11px 26px; background: linear-gradient(135deg, var(--blue), var(--teal)); color: #0f0f1a; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14px; border: none; border-radius: 9px; cursor: pointer; height: 44px; white-space: nowrap; }
+  .btn-load:hover { opacity: 0.9; }
+  .teacher-info { background: rgba(0,229,204,0.06); border: 1px solid rgba(0,229,204,0.15); border-radius: 10px; padding: 10px 16px; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .teacher-info strong { color: var(--teal); }
+  .table-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .table-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-header h3 { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; }
+  .table-header p { font-size: 12px; color: var(--muted); }
+  .btn-save-all { padding: 9px 22px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--green); font-family: 'Sora', sans-serif; font-weight: 700; font-size: 13px; border-radius: 9px; cursor: pointer; }
+  .btn-save-all:hover { background: rgba(16,185,129,0.2); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: rgba(79,195,247,0.07); padding: 11px 14px; font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.8px; text-align: left; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tbody tr:hover { background: rgba(79,195,247,0.03); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 10px 14px; font-size: 14px; vertical-align: middle; }
+  .prn-chip { display: inline-block; padding: 3px 9px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.18); border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; color: var(--blue); }
+  .marks-input { width: 68px; padding: 7px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; text-align: center; outline: none; }
+  .marks-input:focus { border-color: var(--blue); }
+  .marks-input.saved { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.06); }
+  .btn-row { padding: 6px 13px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.25); color: var(--blue); font-size: 12px; font-weight: 600; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+  .btn-row:hover { background: rgba(79,195,247,0.16); }
+  .btn-row.done { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: var(--green); }
+  .row-status { font-size: 11px; margin-top: 3px; }
+  .row-status.ok   { color: var(--green); }
+  .row-status.fail { color: var(--red); }
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
+  .empty-state .icon { font-size: 44px; margin-bottom: 14px; }
+  .toast { position: fixed; bottom: 28px; right: 28px; padding: 13px 22px; border-radius: 12px; font-size: 14px; font-weight: 500; display: none; z-index: 999; max-width: 340px; }
+  .toast.ok  { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: var(--green); }
+  .toast.err { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.4); color: var(--red); }
+  .progress-bar-wrap { height: 3px; background: rgba(79,195,247,0.1); }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--teal)); width: 0%; transition: width 0.4s ease; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/teacher.html" class="brand">
+    <span class="logo">&#128196;</span> Paper Review
+  </a>
+  <div class="nav-links">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/marksEntry.html" class="active">Enter Marks</a>
+    <a href="/viewQueries.html">Queries</a>
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</nav>
+
+<div class="main">
+  <h1>Bulk Marks Entry</h1>
+  <p class="subtitle">Select division, subject, and number of questions to begin.</p>
+
+  <!-- Teacher info bar (populated from /teacher/my-info) -->
+  <div class="teacher-info" id="teacherInfo" style="display:none">
+    Logged in as: <strong id="teacherName">-</strong> &nbsp;|&nbsp;
+    Assigned Subjects: <strong id="assignedSubjects">-</strong> &nbsp;|&nbsp;
+    Assigned Divisions: <strong id="assignedDivisions">-</strong>
+  </div>
+
+  <!-- Filter panel -->
+  <div class="panel">
+    <div class="panel-title">Step 1 — Select Parameters</div>
+    <div class="filter-grid">
+      <div class="field">
+        <label>Division</label>
+        <select id="divSelect">
+          <option value="">-- Select Division --</option>
+          <option value="A">Division A</option>
+          <option value="B">Division B</option>
+          <option value="C">Division C</option>
+          <option value="D">Division D</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Subject</label>
+        <select id="subjectSelect">
+          <option value="">-- Select Subject --</option>
+          <option value="1">ADS (Subject 1)</option>
+          <option value="2">Java (Subject 2)</option>
+          <option value="3">TOC (Subject 3)</option>
+          <option value="4">DBMS (Subject 4)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>No. of Questions</label>
+        <!--
+          DYNAMIC: Teacher types a number (1-15).
+          JavaScript generates Q1, Q2, Q3... up to that number.
+          This replaces the old hardcoded Q1-Q5.
+        -->
+        <input type="number" min="0" max="10" id="numQuestions" value="5" min="1" max="15" placeholder="e.g. 5">
+      </div>
+      <button class="btn-load" onclick="loadStudents()">Load Students</button>
+    </div>
+  </div>
+
+  <!-- Table area -->
+  <div id="tableArea">
+    <div class="empty-state">
+      <div class="icon">&#128203;</div>
+      <p>Select division, subject, and question count, then click <strong>Load Students</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Teacher's allowed subjects and divisions (from /teacher/my-info)
+  var allowedSubjectIds = [];
+  var allowedDivisions  = [];
+  var isAdmin = false;
+
+  var SUBJECT_NAMES = { '1':'ADS', '2':'Java', '3':'TOC', '4':'DBMS' };
+
+  function showToast(msg, ok) {
+    var t = document.getElementById('toast');
+    t.textContent = (ok ? '\u2713 ' : '\u26a0 ') + msg;
+    t.className = 'toast ' + (ok ? 'ok' : 'err');
+    t.style.display = 'block';
+    clearTimeout(t._t);
+    t._t = setTimeout(function() { t.style.display = 'none'; }, 3000);
+  }
+
+  // On page load: call /api/me to check role, then /teacher/my-info to get assignments
+  window.onload = function() {
+    fetch('/api/me')
+      .then(function(r) { return r.json(); })
+      .then(function(me) {
+        if (me.role === 'ADMIN') {
+          isAdmin = true;
+          return; // Admin has no restrictions
+        }
+        // Fetch teacher's assigned subjects and divisions
+        return fetch('/teacher/my-info')
+          .then(function(r) { return r.json(); })
+          .then(function(info) {
+            document.getElementById('teacherName').textContent      = info.name      || info.username;
+            document.getElementById('assignedSubjects').textContent = info.subjectIds || 'None';
+            document.getElementById('assignedDivisions').textContent = info.divisions  || 'None';
+            document.getElementById('teacherInfo').style.display = 'block';
+
+            // Parse allowed subjects and divisions
+            if (info.subjectIds) {
+              allowedSubjectIds = info.subjectIds.split(',').map(function(s) { return s.trim(); });
+            }
+            if (info.divisions) {
+              allowedDivisions = info.divisions.split(',').map(function(s) { return s.trim().toUpperCase(); });
+            }
+
+            // Disable options the teacher is not allowed to use
+            restrictDropdowns();
+          });
+      })
+      .catch(function() { /* Admin or error — ignore restrictions */ });
+  };
+
+  // Disable subject/division options not in teacher's assignment
+  function restrictDropdowns() {
+    var subjectSel  = document.getElementById('subjectSelect');
+    var divisionSel = document.getElementById('divSelect');
+
+    // Restrict subjects
+    if (allowedSubjectIds.length > 0) {
+      Array.from(subjectSel.options).forEach(function(opt) {
+        if (opt.value && allowedSubjectIds.indexOf(opt.value) === -1) {
+          opt.disabled = true;
+          opt.style.color = '#555';
+        }
+      });
+    }
+
+    // Restrict divisions
+    if (allowedDivisions.length > 0) {
+      Array.from(divisionSel.options).forEach(function(opt) {
+        if (opt.value && allowedDivisions.indexOf(opt.value.toUpperCase()) === -1) {
+          opt.disabled = true;
+          opt.style.color = '#555';
+        }
+      });
+    }
+  }
+
+  // Generate question array dynamically based on numQuestions input
+  function buildQuestions(n) {
+    var qs = [];
+    for (var i = 1; i <= n; i++) qs.push('Q' + i);
+    return qs;
+  }
+
+  function loadStudents() {
+    var div        = document.getElementById('divSelect').value;
+    var subjectId  = document.getElementById('subjectSelect').value;
+    var numQ       = parseInt(document.getElementById('numQuestions').value) || 5;
+
+    if (!div)      { showToast('Please select a division.', false); return; }
+    if (!subjectId){ showToast('Please select a subject.',  false); return; }
+    if (numQ < 1 || numQ > 15) { showToast('Questions must be 1-15.', false); return; }
+
+    var questions   = buildQuestions(numQ);  // Dynamic: ['Q1','Q2',...,'QN']
+    var subjectName = SUBJECT_NAMES[subjectId] || 'Subject ' + subjectId;
+
+    document.getElementById('tableArea').innerHTML =
+      '<div class="empty-state"><div class="icon">&#9203;</div><p>Loading students...</p></div>';
+
+    fetch('/student/division/' + div)
+      .then(function(r) { return r.json(); })
+      .then(function(students) {
+        if (!students || students.length === 0) {
+          document.getElementById('tableArea').innerHTML =
+            '<div class="empty-state"><div class="icon">&#128269;</div><p>No students in Division ' + div + '.</p></div>';
+          return;
+        }
+
+        // For each student, fetch existing marks for this subject
+        var promises = students.map(function(s) {
+          return fetch('/marks/student/' + s.prn + '?subjectId=' + subjectId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              var map = {};
+              if (Array.isArray(data)) {
+                data.forEach(function(m) { map[m.question] = m.marksObtained; });
+              }
+              return { student: s, marks: map };
+            })
+            .catch(function() { return { student: s, marks: {} }; });
+        });
+
+        Promise.all(promises).then(function(rows) {
+          renderTable(rows, div, subjectId, subjectName, questions);
+        });
+      })
+      .catch(function() {
+        document.getElementById('tableArea').innerHTML =
+          '<div class="empty-state"><div class="icon">&#9888;</div><p>Failed to load students.</p></div>';
+      });
+  }
+
+  function renderTable(rows, div, subjectId, subjectName, questions) {
+    window._rows       = rows;
+    window._subjectId  = subjectId;
+    window._questions  = questions;
+    window._division   = div;
+
+    // Build column headers dynamically
+    var qHeaders = questions.map(function(q) {
+      return '<th>' + q + '<br><small style="font-weight:400;color:var(--muted)">(0-10)</small></th>';
+    }).join('');
+
+    var bodyRows = rows.map(function(r, idx) {
+      var s = r.student;
+      var qCells = questions.map(function(q) {
+        var val = (r.marks[q] !== undefined) ? r.marks[q] : '';
+        return '<td><input type="number" min="0" max="10" class="marks-input' + (val !== '' ? ' saved' : '') + '"' +
+               ' id="inp_' + idx + '_' + q + '" value="' + val + '" placeholder="-"' +
+               ' oninput="this.classList.remove(\'saved\')"></td>';
+      }).join('');
+
+      return '<tr id="row_' + idx + '">' +
+        '<td><span class="prn-chip">' + s.prn + '</span></td>' +
+        '<td style="font-weight:500">' + (s.name || '-') + '</td>' +
+        qCells +
+        '<td>' +
+          '<button class="btn-row" onclick="saveRow(' + idx + ',\'' + s.prn + '\',\'' + subjectId + '\',\'' + div + '\')">Save</button>' +
+          '<div class="row-status" id="st_' + idx + '"></div>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+
+    document.getElementById('tableArea').innerHTML =
+      '<div class="table-wrapper">' +
+        '<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>' +
+        '<div class="table-header">' +
+          '<div><h3>Division ' + div + ' &mdash; ' + subjectName + '</h3>' +
+          '<p>' + rows.length + ' students &nbsp;&middot;&nbsp; ' + questions.length + ' questions per student</p></div>' +
+          '<button class="btn-save-all" onclick="saveAll()">Save All Rows</button>' +
+        '</div>' +
+        '<div style="overflow-x:auto"><table>' +
+          '<thead><tr><th>PRN</th><th>Name</th>' + qHeaders + '<th>Action</th></tr></thead>' +
+          '<tbody id="tbody">' + bodyRows + '</tbody>' +
+        '</table></div>' +
+      '</div>';
+  }
+
+  function saveRow(idx, prn, subjectId, division) {
+    var questions = window._questions || [];
+    var btn       = document.querySelector('#row_' + idx + ' .btn-row');
+    var st        = document.getElementById('st_' + idx);
+
+    var tasks = [];
+    questions.forEach(function(q) {
+      var inp = document.getElementById('inp_' + idx + '_' + q);
+      if (!inp || inp.value === '') return;
+      
+      var value = parseInt(inp.value);
+      if (value > 10 || value < 0) {
+    	  return Promise.reject("Invalid marks");
+    	}
+      tasks.push({ q: q, v: parseInt(inp.value), inp: inp });
+    });
+
+    if (tasks.length === 0) { showToast('No marks entered for this row.', false); return; }
+
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    // UPSERT: backend /marks/add now calls marksService.upsertMarks()
+    var ps = tasks.map(function(t) {
+      return fetch('/marks/add?prn=' + encodeURIComponent(prn) +
+                   '&subjectId=' + encodeURIComponent(subjectId) +
+                   '&question=' + encodeURIComponent(t.q) +
+                   '&marks=' + encodeURIComponent(t.v) +
+                   '&division=' + encodeURIComponent(division))
+        .then(function() { t.inp.classList.add('saved'); });
+    });
+
+    Promise.all(ps)
+      .then(function() {
+        btn.textContent = '\u2713 Saved'; btn.className = 'btn-row done'; btn.disabled = false;
+        st.textContent = tasks.length + ' marks saved'; st.className = 'row-status ok';
+        showToast('Saved: PRN ' + prn, true);
+      })
+      .catch(function() {
+        btn.textContent = 'Retry'; btn.disabled = false;
+        st.textContent = 'Failed'; st.className = 'row-status fail';
+        showToast('Failed for PRN ' + prn, false);
+      });
+  }
+
+  function saveAll() {
+    var rows     = window._rows || [];
+    var subId    = window._subjectId;
+    var div      = window._division;
+    var bar      = document.getElementById('progressBar');
+    var done     = 0;
+
+    var allPs = rows.map(function(r, idx) {
+      return saveRowSilent(idx, r.student.prn, subId, div).then(function() {
+        done++;
+        if (bar) bar.style.width = Math.round(done * 100 / rows.length) + '%';
+      });
+    });
+
+    showToast('Saving all rows...', true);
+    Promise.all(allPs).then(function() {
+      showToast('All rows saved!', true);
+      setTimeout(function() { if (bar) bar.style.width = '0%'; }, 1500);
+    });
+  }
+
+  function saveRowSilent(idx, prn, subjectId, division) {
+    var questions = window._questions || [];
+    var tasks = [];
+    questions.forEach(function(q) {
+      var inp = document.getElementById('inp_' + idx + '_' + q);
+      if (!inp || inp.value === '') return;
+
+      
+      var value = parseInt(inp.value);
+      if (value > 10 || value < 0) {
+    	  return Promise.reject("Invalid marks");
+    	}
+       tasks.push({ q: q, v: parseInt(inp.value), inp: inp });
+    });
+    if (tasks.length === 0) return Promise.resolve();
+
+    var ps = tasks.map(function(t) {
+      return fetch('/marks/add?prn=' + encodeURIComponent(prn) +
+                   '&subjectId=' + encodeURIComponent(subjectId) +
+                   '&question=' + encodeURIComponent(t.q) +
+                   '&marks=' + encodeURIComponent(t.v) +
+                   '&division=' + encodeURIComponent(division))
+        .then(function() { t.inp.classList.add('saved'); });
+    });
+
+    return Promise.all(ps).then(function() {
+      var btn = document.querySelector('#row_' + idx + ' .btn-row');
+      var st  = document.getElementById('st_' + idx);
+      if (btn) { btn.textContent = '\u2713 Saved'; btn.className = 'btn-row done'; }
+      if (st)  { st.textContent = tasks.length + ' saved'; st.className = 'row-status ok'; }
+    });
+  }
+</script>
+
+</body>
+</html>

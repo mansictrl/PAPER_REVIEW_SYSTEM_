@@ -1,0 +1,115 @@
+<!-- === src/main/resources/static/student.html === -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Dashboard - Paper Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f1a; --card: #16213e; --surface: #1a1a2e;
+    --blue: #4fc3f7; --teal: #00e5cc; --red: #e94560;
+    --green: #10b981; --text: #e0e0e0; --muted: #8892a4;
+    --border: rgba(79,195,247,0.15);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .navbar { background: rgba(22,33,62,0.96); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 62px; position: sticky; top: 0; z-index: 100; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+  .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; }
+  .nav-links a:hover { color: var(--text); background: rgba(79,195,247,0.08); }
+  .nav-links a.active { color: var(--blue); background: rgba(79,195,247,0.1); }
+  .nav-links a.logout { color: var(--red); border: 1px solid rgba(233,69,96,0.28); }
+  .main { max-width: 700px; margin: 0 auto; padding: 52px 24px; }
+  h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .info-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; display: flex; align-items: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
+  .info-chip { display: flex; flex-direction: column; gap: 3px; }
+  .info-chip .label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; }
+  .info-chip .value { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: var(--blue); }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .action-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; text-decoration: none; display: block; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+  .action-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; opacity: 0; transition: opacity 0.2s; }
+  .action-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); border-color: rgba(79,195,247,0.3); }
+  .action-card:hover::after { opacity: 1; }
+  .card-blue::after  { background: linear-gradient(90deg, var(--blue), var(--teal)); }
+  .card-teal::after  { background: linear-gradient(90deg, var(--teal), var(--green)); }
+  .card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+  .icon-blue { background: rgba(79,195,247,0.1); border: 1px solid rgba(79,195,247,0.2); }
+  .icon-teal { background: rgba(0,229,204,0.1); border: 1px solid rgba(0,229,204,0.2); }
+  .action-card h3 { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .action-card p { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
+  .cta { font-size: 13px; font-weight: 700; }
+  .cta-blue { color: var(--blue); }
+  .cta-teal { color: var(--teal); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/student.html" class="brand">
+    <span class="logo">&#128196;</span> Paper Review
+  </a>
+  <div class="nav-links">
+    <a href="/student.html" class="active">Dashboard</a>
+    <a href="/query.html">Raise Query</a>
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</nav>
+
+<div class="main">
+  <h1>Student Dashboard</h1>
+  <p class="subtitle">Welcome back! Your academic records are ready.</p>
+
+  <!-- Student info loaded from /api/me -->
+  <div class="info-bar" id="infoBar">
+    <div class="info-chip">
+      <span class="label">Name</span>
+      <span class="value" id="studentName">Loading...</span>
+    </div>
+    <div class="info-chip">
+      <span class="label">PRN</span>
+      <span class="value" id="studentPrn">Loading...</span>
+    </div>
+    <div class="info-chip">
+      <span class="label">Role</span>
+      <span class="value" style="color:var(--teal)">Student</span>
+    </div>
+  </div>
+
+  <!-- Two clean action cards -->
+  <div class="cards">
+    <a href="/view/marks" class="action-card card-blue">
+      <div class="card-icon icon-blue">&#128202;</div>
+      <h3>View My Marks</h3>
+      <p>See your marks for all subjects. Filter by subject and raise queries.</p>
+      <span class="cta cta-blue">Open Marks &rarr;</span>
+    </a>
+
+    <a href="/query.html" class="action-card card-teal">
+      <div class="card-icon icon-teal">&#128172;</div>
+      <h3>Raise Query</h3>
+      <p>Disagree with a marks decision? Raise a review query for your teacher.</p>
+      <span class="cta cta-teal">Raise Query &rarr;</span>
+    </a>
+  </div>
+</div>
+
+<script>
+  // Auto-load student name and PRN from session
+  fetch('/api/me')
+    .then(function(r) { return r.json(); })
+    .then(function(me) {
+      document.getElementById('studentName').textContent = me.username || '-';
+      document.getElementById('studentPrn').textContent  = me.prn     || 'Not linked';
+    })
+    .catch(function() {
+      document.getElementById('studentName').textContent = 'Error loading';
+      document.getElementById('studentPrn').textContent  = '-';
+    });
+</script>
+
+</body>
+</html>

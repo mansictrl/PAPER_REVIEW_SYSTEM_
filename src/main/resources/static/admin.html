@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard - Paper Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f1a; --surface: #1a1a2e; --card: #16213e;
+    --blue: #4fc3f7; --teal: #00e5cc; --red: #e94560;
+    --green: #10b981; --orange: #f59e0b; --purple: #a78bfa;
+    --text: #e0e0e0; --muted: #8892a4; --border: rgba(79,195,247,0.15);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAVBAR */
+  .navbar {
+    background: rgba(22,33,62,0.96); border-bottom: 1px solid var(--border);
+    padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
+    height: 62px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+  }
+  .navbar-brand { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+  .navbar-brand .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--purple), var(--blue)); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .navbar-links { display: flex; align-items: center; gap: 4px; }
+  .navbar-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; }
+  .navbar-links a:hover { color: var(--text); background: rgba(79,195,247,0.08); }
+  .navbar-links a.active { color: var(--purple); background: rgba(167,139,250,0.1); }
+  .navbar-links a.logout { color: var(--red); border: 1px solid rgba(233,69,96,0.28); margin-left: 8px; }
+
+  /* LAYOUT */
+  .main { max-width: 1040px; margin: 0 auto; padding: 44px 24px; }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom: 32px; }
+  .role-tag { display: inline-block; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.25); color: var(--purple); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .page-header h1 { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 6px; }
+  .page-header p { color: var(--muted); font-size: 14px; }
+
+  /* QUICK ACTION CARDS */
+  .cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 40px; }
+  .action-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px 18px; text-decoration: none; display: block; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+  .action-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; opacity: 0; transition: opacity 0.2s; }
+  .action-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); border-color: rgba(79,195,247,0.3); }
+  .action-card:hover::after { opacity: 1; }
+  .card-purple::after { background: linear-gradient(90deg, var(--purple), var(--blue)); }
+  .card-blue::after   { background: linear-gradient(90deg, var(--blue), var(--teal)); }
+  .card-orange::after { background: linear-gradient(90deg, var(--orange), var(--red)); }
+  .card-green::after  { background: linear-gradient(90deg, var(--green), var(--teal)); }
+  .card-teal::after   { background: linear-gradient(90deg, var(--teal), var(--blue)); }
+  .card-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+  .icon-purple { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); }
+  .icon-blue   { background: rgba(79,195,247,0.1);  border: 1px solid rgba(79,195,247,0.2); }
+  .icon-orange { background: rgba(245,158,11,0.1);  border: 1px solid rgba(245,158,11,0.2); }
+  .icon-green  { background: rgba(16,185,129,0.1);  border: 1px solid rgba(16,185,129,0.2); }
+  .icon-teal   { background: rgba(0,229,204,0.1);   border: 1px solid rgba(0,229,204,0.2); }
+  .action-card h3 { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .action-card p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700;
+    color: var(--text); margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* DATA TABLES */
+  .table-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 32px; }
+  .table-top { padding: 14px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-top h3 { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); }
+  .btn-refresh { padding: 6px 14px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.25); color: var(--blue); font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+  .btn-refresh:hover { background: rgba(79,195,247,0.16); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: rgba(79,195,247,0.07); padding: 11px 16px; font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.8px; text-align: left; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+  tbody tr:hover { background: rgba(79,195,247,0.04); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 11px 16px; font-size: 14px; vertical-align: middle; }
+  .prn-chip { display: inline-block; padding: 3px 10px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.18); border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; color: var(--blue); }
+  .div-badge { display: inline-block; padding: 3px 10px; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--purple); }
+  .role-badge-admin   { color: var(--purple); font-weight: 700; font-size: 12px; }
+  .role-badge-teacher { color: var(--teal);   font-weight: 700; font-size: 12px; }
+  .role-badge-student { color: var(--blue);   font-weight: 700; font-size: 12px; }
+
+  /* Performance bar */
+  .pct-bar { display: flex; align-items: center; gap: 10px; }
+  .pct-track { flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .pct-fill  { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .pct-high { background: var(--green); }
+  .pct-mid  { background: var(--orange); }
+  .pct-low  { background: var(--red); }
+  .pct-text { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; min-width: 42px; }
+
+  /* Teacher action buttons */
+  .btn-edit { padding: 5px 12px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.25); color: var(--blue); font-size: 12px; font-weight: 600; border-radius: 7px; cursor: pointer; margin-right: 6px; }
+  .btn-edit:hover { background: rgba(79,195,247,0.18); }
+  .btn-del  { padding: 5px 12px; background: rgba(233,69,96,0.08); border: 1px solid rgba(233,69,96,0.25); color: var(--red); font-size: 12px; font-weight: 600; border-radius: 7px; cursor: pointer; }
+  .btn-del:hover { background: rgba(233,69,96,0.18); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 32px; width: 100%; max-width: 440px; }
+  .modal h3 { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .modal-field { margin-bottom: 16px; }
+  .modal-field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; }
+  .modal-field input { width: 100%; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; }
+  .modal-field input:focus { border-color: var(--blue); }
+  .modal-field small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn-save { flex: 1; padding: 12px; background: linear-gradient(135deg, var(--blue), var(--teal)); color: #0f0f1a; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14px; border: none; border-radius: 9px; cursor: pointer; }
+  .btn-cancel { padding: 12px 20px; background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Sora', sans-serif; font-weight: 600; font-size: 14px; border-radius: 9px; cursor: pointer; }
+  .btn-cancel:hover { color: var(--text); }
+  .modal-msg { margin-top: 12px; font-size: 13px; text-align: center; }
+  .modal-msg.ok  { color: var(--green); }
+  .modal-msg.err { color: var(--red); }
+
+  /* User sections tabs */
+  .user-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .user-tab { padding: 7px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  .user-tab.active { background: rgba(79,195,247,0.1); border-color: rgba(79,195,247,0.3); color: var(--blue); }
+
+  .empty-state { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="/admin.html" class="navbar-brand">
+    <span class="logo">&#9632;</span> Paper Review
+  </a>
+  <div class="navbar-links">
+    <a href="/admin.html" class="active">Admin</a>
+    <a href="/admin-report.html">Analytics</a>
+    <a href="/marksEntry.html">Enter Marks</a>
+    <a href="/viewQueries.html">Queries</a>
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="role-tag">Admin</div>
+    <h1>Admin Control Panel</h1>
+    <p>Manage teachers, monitor student performance, and control the system</p>
+  </div>
+
+  <!-- Quick Action Cards -->
+  <div class="cards-grid">
+    <a href="/registerTeacher.html" class="action-card card-purple">
+      <div class="card-icon icon-purple">+</div>
+      <h3>Add Teacher</h3>
+      <p>Create teacher with subject and division assignment</p>
+    </a>
+    <a href="/admin-report.html" class="action-card card-green">
+      <div class="card-icon icon-green">~</div>
+      <h3>Analytics</h3>
+      <p>Division and subject-wise performance reports</p>
+    </a>
+    <a href="/marksEntry.html" class="action-card card-blue">
+      <div class="card-icon icon-blue">M</div>
+      <h3>Enter Marks</h3>
+      <p>Bulk marks entry for any division and subject</p>
+    </a>
+    <a href="/viewQueries.html" class="action-card card-orange">
+      <div class="card-icon icon-orange">Q</div>
+      <h3>View Queries</h3>
+      <p>Review and resolve student mark queries</p>
+    </a>
+  </div>
+
+  <!-- ── TEACHERS SECTION ───────────────────────────────────────────────── -->
+  <div class="section-title">
+    Teacher Management
+    <a href="/registerTeacher.html" style="font-size:13px;color:var(--purple);text-decoration:none;font-weight:600">+ Add Teacher</a>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="table-top">
+      <h3>All Teachers</h3>
+      <button class="btn-refresh" onclick="loadTeachers()">Refresh</button>
+    </div>
+    <div id="teachersTable">
+      <div class="empty-state">Loading teachers...</div>
+    </div>
+  </div>
+
+  <!-- ── STUDENT PERFORMANCE SECTION ───────────────────────────────────── -->
+  <div class="section-title">Student Performance</div>
+
+  <div class="table-wrapper">
+    <div class="table-top">
+      <h3>Average Marks per Student</h3>
+      <button class="btn-refresh" onclick="loadPerformance()">Refresh</button>
+    </div>
+    <div id="performanceTable">
+      <div class="empty-state">Loading performance data...</div>
+    </div>
+  </div>
+
+  <!-- ── USERS SECTION (split into Students / Teachers) ────────────────── -->
+  <div class="section-title">User Accounts</div>
+
+  <div class="user-tabs">
+    <button class="user-tab active" id="tabStudents" onclick="showUserTab('students')">Students</button>
+    <button class="user-tab"        id="tabTeachers" onclick="showUserTab('teachers')">Teachers</button>
+    <button class="user-tab"        id="tabAll"      onclick="showUserTab('all')">All Users</button>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="table-top">
+      <h3 id="usersTableTitle">Student Accounts</h3>
+      <button class="btn-refresh" onclick="loadUsers()">Refresh</button>
+    </div>
+    <div id="usersTable">
+      <div class="empty-state">Loading...</div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<!-- ── EDIT TEACHER MODAL ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>Edit Teacher Assignment</h3>
+
+    <div class="modal-field">
+      <label>Teacher Username</label>
+      <input type="text" id="editUsername" readonly style="opacity:0.6;cursor:default">
+    </div>
+
+    <div class="modal-field">
+      <label>Subject IDs (comma-separated)</label>
+      <input type="text" id="editSubjectIds" placeholder="e.g. 1,3">
+      <small>1=ADS, 2=Java, 3=TOC, 4=DBMS</small>
+    </div>
+
+    <div class="modal-field">
+      <label>Divisions (comma-separated)</label>
+      <input type="text" id="editDivisions" placeholder="e.g. A,B">
+      <small>Use: A, B, C, D</small>
+    </div>
+
+    <div class="modal-msg" id="editMsg"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── ALL USERS data (cached for tab switching) ────────────────────────────
+  var allUsersData = [];
+  var currentTab   = 'students';
+
+  // ── TEACHERS TABLE ───────────────────────────────────────────────────────
+  function loadTeachers() {
+    document.getElementById('teachersTable').innerHTML = '<div class="empty-state">Loading...</div>';
+
+    fetch('/admin/teachers')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || data.length === 0) {
+          document.getElementById('teachersTable').innerHTML =
+            '<div class="empty-state">No teachers yet. Click "Add Teacher" above.</div>';
+          return;
+        }
+
+        var rows = data.map(function(t) {
+          // Each teacher row has Edit + Delete buttons
+          return '<tr>' +
+            '<td style="font-weight:500">' + (t.name || '-') + '</td>' +
+            '<td style="color:var(--blue)">' + (t.username || '-') + '</td>' +
+            '<td style="color:var(--teal)">' + (t.subjectIds || 'Not assigned') + '</td>' +
+            '<td>' + (t.divisions || 'Not assigned') + '</td>' +
+            '<td>' +
+              '<button class="btn-edit" onclick="openEditModal(\'' +
+                (t.username||'') + '\',\'' +
+                (t.subjectIds||'') + '\',\'' +
+                (t.divisions||'') + '\')">Edit</button>' +
+              '<button class="btn-del" onclick="deleteTeacher(\'' + (t.username||'') + '\')">Delete</button>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+
+        document.getElementById('teachersTable').innerHTML =
+          '<table><thead><tr>' +
+            '<th>Name</th><th>Username</th><th>Subject IDs</th><th>Divisions</th><th>Actions</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
+      })
+      .catch(function() {
+        document.getElementById('teachersTable').innerHTML = '<div class="empty-state">Failed to load. Check console.</div>';
+      });
+  }
+
+  // ── EDIT MODAL ───────────────────────────────────────────────────────────
+
+  function openEditModal(username, subjectIds, divisions) {
+    document.getElementById('editUsername').value   = username;
+    document.getElementById('editSubjectIds').value = subjectIds;
+    document.getElementById('editDivisions').value  = divisions;
+    document.getElementById('editMsg').textContent  = '';
+    document.getElementById('editMsg').className    = 'modal-msg';
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('editModal').classList.remove('open');
+  }
+
+  function saveEdit() {
+    var username   = document.getElementById('editUsername').value;
+    var subjectIds = document.getElementById('editSubjectIds').value.trim();
+    var divisions  = document.getElementById('editDivisions').value.trim();
+
+    if (!subjectIds || !divisions) {
+      showModalMsg('Please fill both fields.', false);
+      return;
+    }
+
+    var fd = new FormData();
+    fd.append('username',   username);
+    fd.append('subjectIds', subjectIds);
+    fd.append('divisions',  divisions);
+
+    fetch('/register/teacher/assign', { method: 'POST', body: fd })
+      .then(function(r) { return r.text(); })
+      .then(function(msg) {
+        var ok = !msg.startsWith('ERROR');
+        showModalMsg(ok ? 'Updated successfully!' : msg, ok);
+        if (ok) {
+          setTimeout(function() { closeModal(); loadTeachers(); }, 1000);
+        }
+      })
+      .catch(function() { showModalMsg('Request failed.', false); });
+  }
+
+  function showModalMsg(text, ok) {
+    var el = document.getElementById('editMsg');
+    el.textContent = text;
+    el.className   = 'modal-msg ' + (ok ? 'ok' : 'err');
+  }
+
+  // ── DELETE TEACHER ───────────────────────────────────────────────────────
+
+  function deleteTeacher(username) {
+    if (!confirm('Delete teacher "' + username + '"? This removes their login account too.')) return;
+
+    fetch('/register/teacher/' + username, { method: 'DELETE' })
+      .then(function(r) { return r.text(); })
+      .then(function(msg) {
+        alert(msg);
+        loadTeachers();
+        loadUsers(); // Refresh users table too
+      })
+      .catch(function() { alert('Delete failed.'); });
+  }
+
+  // ── PERFORMANCE TABLE ────────────────────────────────────────────────────
+
+  function loadPerformance() {
+    document.getElementById('performanceTable').innerHTML = '<div class="empty-state">Loading...</div>';
+
+    fetch('/admin/performance')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || data.length === 0) {
+          document.getElementById('performanceTable').innerHTML =
+            '<div class="empty-state">No student data yet.</div>';
+          return;
+        }
+
+        var rows = data.map(function(s) {
+          var pct = s.percentage;
+          var cls = pct >= 60 ? 'pct-high' : pct >= 40 ? 'pct-mid' : 'pct-low';
+          return '<tr>' +
+            '<td><span class="prn-chip">' + s.prn + '</span></td>' +
+            '<td style="font-weight:500">' + s.name + '</td>' +
+            '<td><span class="div-badge">Div ' + s.division + '</span></td>' +
+            '<td>' + s.totalObtained + ' / ' + s.totalMax + '</td>' +
+            '<td><div class="pct-bar">' +
+              '<div class="pct-track"><div class="pct-fill ' + cls + '" style="width:' + pct + '%"></div></div>' +
+              '<span class="pct-text ' + cls + '">' + pct + '%</span>' +
+            '</div></td>' +
+            '<td style="color:var(--muted);font-size:13px">' + s.recordCount + ' records</td>' +
+          '</tr>';
+        }).join('');
+
+        document.getElementById('performanceTable').innerHTML =
+          '<table><thead><tr>' +
+            '<th>PRN</th><th>Name</th><th>Division</th><th>Marks</th><th>Performance</th><th>Records</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
+      })
+      .catch(function() {
+        document.getElementById('performanceTable').innerHTML = '<div class="empty-state">Failed to load.</div>';
+      });
+  }
+
+  // ── USERS TABLE (tab-based) ──────────────────────────────────────────────
+
+  function loadUsers() {
+    fetch('/admin/users')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        allUsersData = data || [];
+        renderUserTab(currentTab);
+      })
+      .catch(function() {
+        document.getElementById('usersTable').innerHTML = '<div class="empty-state">Failed to load.</div>';
+      });
+  }
+
+  function showUserTab(tab) {
+    currentTab = tab;
+
+    // Update tab buttons
+    document.getElementById('tabStudents').className = 'user-tab' + (tab === 'students' ? ' active' : '');
+    document.getElementById('tabTeachers').className = 'user-tab' + (tab === 'teachers' ? ' active' : '');
+    document.getElementById('tabAll').className      = 'user-tab' + (tab === 'all'      ? ' active' : '');
+
+    renderUserTab(tab);
+  }
+
+  function renderUserTab(tab) {
+    var titles = { students: 'Student Accounts', teachers: 'Teacher Accounts', all: 'All User Accounts' };
+    document.getElementById('usersTableTitle').textContent = titles[tab];
+
+    // Filter data based on tab
+    var filtered = allUsersData;
+    if (tab === 'students') filtered = allUsersData.filter(function(u) { return u.role === 'STUDENT'; });
+    if (tab === 'teachers') filtered = allUsersData.filter(function(u) { return u.role === 'TEACHER'; });
+
+    if (!filtered || filtered.length === 0) {
+      document.getElementById('usersTable').innerHTML = '<div class="empty-state">No ' + tab + ' found.</div>';
+      return;
+    }
+
+    var rows = filtered.map(function(u) {
+      var roleClass = 'role-badge-' + u.role.toLowerCase();
+      return '<tr>' +
+        '<td style="font-weight:500">' + u.username + '</td>' +
+        '<td><span class="' + roleClass + '">' + u.role + '</span></td>' +
+        '<td>' + (u.prn !== '-' ? '<span class="prn-chip">' + u.prn + '</span>' : '<span style="color:var(--muted)">-</span>') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    document.getElementById('usersTable').innerHTML =
+      '<table><thead><tr><th>Username</th><th>Role</th><th>PRN</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>';
+  }
+
+  // ── ON PAGE LOAD ─────────────────────────────────────────────────────────
+
+  window.onload = function() {
+    loadTeachers();
+    loadPerformance();
+    loadUsers();
+  };
+
+  // Close modal if clicking outside it
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+
+</body>
+</html>

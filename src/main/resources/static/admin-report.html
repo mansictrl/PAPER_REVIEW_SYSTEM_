@@ -1,0 +1,246 @@
+<!-- === src/main/resources/static/admin-report.html === -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Analytics Report - Paper Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #0f0f1a; --card: #16213e; --surface: #1a1a2e; --blue: #4fc3f7; --teal: #00e5cc; --red: #e94560; --green: #10b981; --orange: #f59e0b; --purple: #a78bfa; --text: #e0e0e0; --muted: #8892a4; --border: rgba(79,195,247,0.15); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .navbar { background: rgba(22,33,62,0.96); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 62px; position: sticky; top: 0; z-index: 100; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+  .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--purple), var(--blue)); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; margin-left: 4px; }
+  .nav-links a:hover { color: var(--text); background: rgba(79,195,247,0.08); }
+  .nav-links a.active { color: var(--purple); background: rgba(167,139,250,0.1); }
+  .nav-links a.logout { color: var(--red); border: 1px solid rgba(233,69,96,0.28); }
+  .main { max-width: 1000px; margin: 0 auto; padding: 44px 24px; }
+  h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .section-title { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .btn-refresh { padding: 6px 16px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.25); color: var(--blue); font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+  .btn-refresh:hover { background: rgba(79,195,247,0.16); }
+  /* Bar chart: CSS-only bars */
+  .bar-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; margin-bottom: 28px; }
+  .bar-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-label { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; width: 110px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 32px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding-left: 12px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; color: #0f0f1a; transition: width 1s ease; min-width: 50px; }
+  .bar-pct { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; width: 52px; text-align: right; flex-shrink: 0; }
+  /* Table styling */
+  .table-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 28px; }
+  .table-top { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-top h3 { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; }
+  .table-top span { font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: rgba(79,195,247,0.07); padding: 12px 16px; font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.8px; text-align: left; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tbody tr:hover { background: rgba(79,195,247,0.04); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 12px 16px; font-size: 14px; vertical-align: middle; }
+  .prn-chip { display: inline-block; padding: 3px 9px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.18); border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700; color: var(--blue); }
+  .div-badge { display: inline-block; padding: 3px 10px; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--purple); }
+  .pct-bar { display: flex; align-items: center; gap: 10px; }
+  .pct-track { flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .pct-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .pct-high { background: var(--green); }
+  .pct-mid  { background: var(--orange); }
+  .pct-low  { background: var(--red); }
+  .pct-text { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; min-width: 46px; text-align: right; }
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+  .badge-best { display: inline-block; padding: 2px 9px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--green); margin-left: 8px; }
+  .badge-weak { display: inline-block; padding: 2px 9px; background: rgba(233,69,96,0.12); border: 1px solid rgba(233,69,96,0.25); border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--red); margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/admin.html" class="brand"><span class="logo">&#128737;</span> Paper Review</a>
+  <div class="nav-links">
+    <a href="/admin.html">Admin</a>
+    <a href="/admin-report.html" class="active">Analytics</a>
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</nav>
+
+<div class="main">
+  <h1>Analytics Report</h1>
+  <p class="subtitle">Division-wise and subject-wise performance overview</p>
+
+  <!-- Division-wise bar chart -->
+  <div class="section-title">
+    Division Performance
+    <button class="btn-refresh" onclick="loadAll()">Refresh</button>
+  </div>
+
+  <div class="bar-section" id="divisionBars">
+    <div class="empty-state">Loading division data...</div>
+  </div>
+
+  <!-- Subject-wise bar chart -->
+  <div class="section-title" style="margin-top:28px">Subject Performance</div>
+
+  <div class="bar-section" id="subjectBars">
+    <div class="empty-state">Loading subject data...</div>
+  </div>
+
+  <!-- Per-student performance table -->
+  <div class="section-title" style="margin-top:28px">Student Performance (Sorted by %)</div>
+
+  <div class="table-wrapper" id="studentTable">
+    <div class="empty-state">Loading student data...</div>
+  </div>
+
+</div>
+
+<script>
+  var BAR_COLORS = [
+    'linear-gradient(90deg, #4fc3f7, #00e5cc)',
+    'linear-gradient(90deg, #a78bfa, #4fc3f7)',
+    'linear-gradient(90deg, #10b981, #4fc3f7)',
+    'linear-gradient(90deg, #f59e0b, #10b981)'
+  ];
+
+  function pctClass(p) {
+    return p >= 60 ? 'pct-high' : p >= 40 ? 'pct-mid' : 'pct-low';
+  }
+
+  function loadAll() {
+    loadDivisionReport();
+    loadSubjectReport();
+    loadStudentReport();
+  }
+
+  // ── Division-wise chart ──────────────────────────────────────────────────────
+  function loadDivisionReport() {
+    document.getElementById('divisionBars').innerHTML =
+      '<div class="empty-state">Loading...</div>';
+
+    fetch('/admin/report/division')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || data.length === 0) {
+          document.getElementById('divisionBars').innerHTML =
+            '<div class="empty-state">No data yet. Add students and marks first.</div>';
+          return;
+        }
+
+        var html = data.map(function(d, i) {
+          var pct  = d.percentage;
+          var color = BAR_COLORS[i % BAR_COLORS.length];
+          var badge = '';
+          if (i === 0) badge = '<span class="badge-best">Best</span>';
+          if (i === data.length - 1 && data.length > 1) badge = '<span class="badge-weak">Needs attention</span>';
+
+          return '<div class="bar-row">' +
+            '<div class="bar-label">Division ' + d.division + badge + '</div>' +
+            '<div class="bar-track">' +
+              '<div class="bar-fill" style="width:' + Math.max(pct,5) + '%; background:' + color + '">' +
+                d.studentCount + ' students' +
+              '</div>' +
+            '</div>' +
+            '<div class="bar-pct" style="color:' + (pct>=60?'var(--green)':pct>=40?'var(--orange)':'var(--red)') + '">' +
+              pct + '%' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        document.getElementById('divisionBars').innerHTML = html;
+      })
+      .catch(function() {
+        document.getElementById('divisionBars').innerHTML =
+          '<div class="empty-state">Failed to load.</div>';
+      });
+  }
+
+  // ── Subject-wise chart ───────────────────────────────────────────────────────
+  function loadSubjectReport() {
+    document.getElementById('subjectBars').innerHTML =
+      '<div class="empty-state">Loading...</div>';
+
+    fetch('/admin/report/subject')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || data.length === 0) {
+          document.getElementById('subjectBars').innerHTML =
+            '<div class="empty-state">No data yet.</div>';
+          return;
+        }
+
+        var html = data.map(function(d, i) {
+          var pct   = d.percentage;
+          var color = BAR_COLORS[i % BAR_COLORS.length];
+          return '<div class="bar-row">' +
+            '<div class="bar-label">' + d.subjectName + '</div>' +
+            '<div class="bar-track">' +
+              '<div class="bar-fill" style="width:' + Math.max(pct,5) + '%; background:' + color + '">' +
+                d.totalEntries + ' entries' +
+              '</div>' +
+            '</div>' +
+            '<div class="bar-pct" style="color:' + (pct>=60?'var(--green)':pct>=40?'var(--orange)':'var(--red)') + '">' +
+              pct + '%' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        document.getElementById('subjectBars').innerHTML = html;
+      })
+      .catch(function() {
+        document.getElementById('subjectBars').innerHTML =
+          '<div class="empty-state">Failed to load.</div>';
+      });
+  }
+
+  // ── Per-student table ────────────────────────────────────────────────────────
+  function loadStudentReport() {
+    document.getElementById('studentTable').innerHTML =
+      '<div class="empty-state">Loading...</div>';
+
+    fetch('/admin/performance')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || data.length === 0) {
+          document.getElementById('studentTable').innerHTML =
+            '<div class="empty-state">No student performance data yet.</div>';
+          return;
+        }
+
+        var rows = data.map(function(s, i) {
+          var pct = s.percentage;
+          var cls = pctClass(pct);
+          return '<tr>' +
+            '<td style="font-weight:600">' + (i+1) + '</td>' +
+            '<td><span class="prn-chip">' + s.prn + '</span></td>' +
+            '<td style="font-weight:500">' + s.name + '</td>' +
+            '<td><span class="div-badge">Div ' + s.division + '</span></td>' +
+            '<td>' + s.totalObtained + ' / ' + s.totalMax + '</td>' +
+            '<td>' +
+              '<div class="pct-bar">' +
+                '<div class="pct-track"><div class="pct-fill ' + cls + '" style="width:' + pct + '%"></div></div>' +
+                '<span class="pct-text" style="color:var(--' + (pct>=60?'green':pct>=40?'orange':'red') + ')">' + pct + '%</span>' +
+              '</div>' +
+            '</td>' +
+            '<td style="color:var(--muted);font-size:13px">' + s.recordCount + '</td>' +
+          '</tr>';
+        }).join('');
+
+        document.getElementById('studentTable').innerHTML =
+          '<div class="table-top"><h3>All Students</h3><span>' + data.length + ' students</span></div>' +
+          '<table><thead><tr>' +
+            '<th>Rank</th><th>PRN</th><th>Name</th><th>Division</th><th>Marks</th><th>Performance</th><th>Records</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
+      })
+      .catch(function() {
+        document.getElementById('studentTable').innerHTML =
+          '<div class="empty-state">Failed to load.</div>';
+      });
+  }
+
+  window.onload = loadAll;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Raise Query - Paper Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f1a; --surface: #1a1a2e; --card: #16213e;
+    --blue: #4fc3f7; --teal: #00e5cc; --red: #e94560;
+    --green: #10b981; --text: #e0e0e0; --muted: #8892a4;
+    --border: rgba(79,195,247,0.15);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .navbar { background: rgba(22,33,62,0.96); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 62px; position: sticky; top: 0; z-index: 100; }
+  .navbar-brand { display: flex; align-items: center; gap: 10px; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; }
+  .navbar-brand .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+  .navbar-links { display: flex; align-items: center; gap: 4px; }
+  .navbar-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; }
+  .navbar-links a:hover { color: var(--text); background: rgba(79,195,247,0.08); }
+  .navbar-links a.active { color: var(--blue); background: rgba(79,195,247,0.1); }
+  .navbar-links a.logout { color: var(--red); border: 1px solid rgba(233,69,96,0.28); margin-left: 8px; }
+  .main { max-width: 540px; margin: 0 auto; padding: 44px 24px; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .back-link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+  .back-link:hover { color: var(--blue); }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 5px; }
+  .page-header p { color: var(--muted); font-size: 14px; }
+  .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+  .form-card-head { padding: 16px 26px; background: rgba(79,195,247,0.05); border-bottom: 1px solid var(--border); }
+  .form-card-head h3 { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--blue); }
+  .form-body { padding: 28px 26px; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.9px; margin-bottom: 8px; }
+  .prefilled-box { width: 100%; padding: 11px 15px; background: rgba(79,195,247,0.05); border: 1px solid rgba(79,195,247,0.15); border-radius: 10px; color: var(--blue); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; }
+  select { width: 100%; padding: 11px 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; appearance: none; transition: border-color 0.2s; }
+  select:focus { border-color: var(--blue); }
+  select:disabled { opacity: 0.45; cursor: not-allowed; }
+  select option { background: #1a1a2e; }
+  textarea { width: 100%; padding: 12px 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; outline: none; resize: vertical; min-height: 110px; transition: border-color 0.2s; }
+  textarea:focus { border-color: var(--blue); }
+  textarea::placeholder { color: var(--muted); }
+  .error-banner { background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); color: var(--red); border-radius: 9px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; display: none; }
+  .btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--blue), var(--teal)); color: #0f0f1a; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 15px; border: none; border-radius: 10px; cursor: pointer; margin-top: 6px; transition: opacity 0.2s; }
+  .btn-submit:hover { opacity: 0.92; }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .success-screen { display: none; text-align: center; padding: 52px 28px; }
+  .success-circle { width: 76px; height: 76px; background: rgba(16,185,129,0.1); border: 2px solid rgba(16,185,129,0.35); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 20px; animation: pop 0.4s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .success-screen h3 { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+  .success-screen p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 26px; }
+  .btn-dashboard { display: inline-block; padding: 12px 28px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--green); font-family: 'Sora', sans-serif; font-weight: 600; font-size: 14px; border-radius: 10px; text-decoration: none; }
+  .redirect-note { margin-top: 14px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/student.html" class="navbar-brand">
+    <span class="logo">&#9670;</span> Paper Review
+  </a>
+  <div class="navbar-links">
+    <a href="/student.html">Dashboard</a>
+    <a href="/view/marks">My Marks</a>
+    <a href="/query.html" class="active">Raise Query</a>
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</nav>
+
+<div class="main">
+  <a href="/student.html" class="back-link">&#8592; Back to Dashboard</a>
+
+  <div class="page-header">
+    <h1>Raise a Query</h1>
+    <p>Submit a concern about your marks for teacher review</p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-card-head">
+      <h3>Query Details</h3>
+    </div>
+
+    <div class="form-body" id="formView">
+
+      <!--
+        PRN is NEVER entered by the student.
+        It is loaded from the server session using /api/me.
+        This is the secure way — students cannot fake another student's PRN.
+      -->
+      <div class="field">
+        <label>Your PRN</label>
+        <div class="prefilled-box" id="prnDisplay">Loading...</div>
+      </div>
+
+      <!--
+        Subject dropdown — loaded from /subject/all (real DB data).
+        Not hardcoded. When student changes subject, questions reload.
+        Can be pre-selected if URL params are passed from the marks page.
+      -->
+      <div class="field">
+        <label>Subject</label>
+        <select id="subjectSelect" onchange="onSubjectChange()" disabled>
+          <option value="">Loading subjects...</option>
+        </select>
+      </div>
+
+      <!--
+        Question dropdown — loaded from student's ACTUAL marks for the chosen subject.
+        Shows: "Q1  (Marks: 7/10)" so student knows which question to query.
+        Prevents querying a question that has no marks entry.
+      -->
+      <div class="field">
+        <label>Question</label>
+        <select id="questionSelect" disabled>
+          <option value="">Select a subject first</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Your Message</label>
+        <textarea id="messageArea"
+          placeholder="Describe your concern. E.g. My answer for Q2 is correct, please review page 3 of the answer sheet."></textarea>
+      </div>
+
+      <!-- Error shown here — for duplicates, missing fields, network errors -->
+      <div class="error-banner" id="errorBanner"></div>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitQuery()">Submit Query</button>
+    </div>
+
+    <!-- SUCCESS VIEW — only shown after confirmed successful save -->
+    <div class="success-screen" id="successView">
+      <div class="success-circle">&#10003;</div>
+      <h3>Query Submitted!</h3>
+      <p>Your query has been sent to your teacher for review.</p>
+      <a href="/student.html" class="btn-dashboard">Go to Dashboard</a>
+      <p class="redirect-note" id="redirectNote">Redirecting in 3 seconds...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ─────────────────────────────────────────────────────────────────
+  var myPrn = '';   // Set from /api/me — never from URL
+  var urlParams   = new URLSearchParams(window.location.search);
+  var preSubject  = urlParams.get('subjectId') || '';
+  var preQuestion = urlParams.get('question')  || '';
+
+  // ── Step 1: Load PRN from session ─────────────────────────────────────────
+  /*
+   * /api/me returns { username, role, prn } for the logged-in user.
+   * For a STUDENT, prn is the student's PRN.
+   * We store it in myPrn and never let the user type it.
+   *
+   * This is the fix for: query not saving because prn was '' (empty string).
+   */
+  fetch('/api/me')
+    .then(function(r) { return r.json(); })
+    .then(function(me) {
+      myPrn = me.prn || '';
+      document.getElementById('prnDisplay').textContent = myPrn || 'Not linked — please contact admin';
+      loadSubjects();
+    })
+    .catch(function() {
+      document.getElementById('prnDisplay').textContent = 'Error loading — please re-login';
+    });
+
+  // ── Step 2: Load subjects from /subject/all ────────────────────────────────
+  function loadSubjects() {
+    fetch('/subject/all')
+      .then(function(r) { return r.json(); })
+      .then(function(subjects) {
+        var sel = document.getElementById('subjectSelect');
+        sel.innerHTML = '<option value="">-- Select Subject --</option>';
+        subjects.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value       = s.id;
+          opt.textContent = s.name;
+          sel.appendChild(opt);
+        });
+        sel.disabled = false;
+
+        // Pre-select if coming from marks page
+        if (preSubject) {
+          sel.value = preSubject;
+          loadQuestionsForSubject(preSubject);
+        }
+      })
+      .catch(function() {
+        var sel = document.getElementById('subjectSelect');
+        sel.innerHTML = '<option value="">Failed to load subjects</option>';
+      });
+  }
+
+  // ── Step 3: When subject changes, load that student's questions ────────────
+  function onSubjectChange() {
+    var subjectId = document.getElementById('subjectSelect').value;
+    var qSel      = document.getElementById('questionSelect');
+
+    if (!subjectId) {
+      qSel.innerHTML = '<option value="">Select a subject first</option>';
+      qSel.disabled  = true;
+      return;
+    }
+    loadQuestionsForSubject(subjectId);
+  }
+
+  function loadQuestionsForSubject(subjectId) {
+    var qSel = document.getElementById('questionSelect');
+    qSel.disabled  = true;
+    qSel.innerHTML = '<option value="">Loading questions...</option>';
+
+    if (!myPrn) {
+      qSel.innerHTML = '<option value="">PRN not loaded — cannot fetch questions</option>';
+      return;
+    }
+
+    /*
+     * GET /marks/student/{prn}?subjectId={id}
+     * Returns list of Marks objects: [ { question:"Q1", marksObtained:7, maxMarks:10 }, ... ]
+     *
+     * We show the marks in the dropdown label so the student knows which
+     * question they are querying.
+     */
+    fetch('/marks/student/' + encodeURIComponent(myPrn) + '?subjectId=' + subjectId)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+          qSel.innerHTML = '<option value="">No marks found for this subject</option>';
+          return;
+        }
+        qSel.innerHTML = '<option value="">-- Select Question --</option>';
+        data.forEach(function(m) {
+          var opt = document.createElement('option');
+          opt.value       = m.question;
+          opt.textContent = m.question + '  (Marks: ' + m.marksObtained + ' / ' + m.maxMarks + ')';
+          qSel.appendChild(opt);
+        });
+        qSel.disabled = false;
+
+        // Pre-select from URL param
+        if (preQuestion) { qSel.value = preQuestion; preQuestion = ''; }
+      })
+      .catch(function() {
+        qSel.innerHTML = '<option value="">Error loading questions</option>';
+      });
+  }
+
+  // ── Show error banner ──────────────────────────────────────────────────────
+  function showError(msg) {
+    var el = document.getElementById('errorBanner');
+    el.textContent   = msg;
+    el.style.display = 'block';
+  }
+
+  function clearError() {
+    document.getElementById('errorBanner').style.display = 'none';
+  }
+
+  // ── Submit query ───────────────────────────────────────────────────────────
+  function submitQuery() {
+    var subjectId = document.getElementById('subjectSelect').value;
+    var question  = document.getElementById('questionSelect').value;
+    var msg       = document.getElementById('messageArea').value.trim();
+
+    clearError();
+    document.getElementById('messageArea').style.borderColor = '';
+
+    // Frontend validation
+    if (!myPrn)     { showError('Your PRN could not be loaded. Please logout and login again.'); return; }
+    if (!subjectId) { showError('Please select a subject.'); return; }
+    if (!question)  { showError('Please select a question.'); return; }
+    if (msg.length < 5) {
+      document.getElementById('messageArea').style.borderColor = 'var(--red)';
+      showError('Your message must be at least 5 characters.');
+      document.getElementById('messageArea').focus();
+      return;
+    }
+
+    var btn         = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Submitting...';
+
+    var fd = new FormData();
+    fd.append('prn',       myPrn);       // from session — never empty
+    fd.append('subjectId', subjectId);   // from dropdown — validated above
+    fd.append('question',  question);    // from dropdown — validated above
+    fd.append('message',   msg);
+
+    /*
+     * CRITICAL FIX:
+     * Old code did .then(function() { show success }) — this ran even on 400 errors.
+     * New code reads the response TEXT first, then checks if it starts with "DUPLICATE:"
+     * Only shows success screen if backend returns "Query Submitted Successfully!".
+     */
+    fetch('/query/add', { method: 'POST', body: fd })
+    .then(function(r) {
+    	  return r.text().then(function(text) {
+    	    if (!r.ok) {
+    	      throw new Error(text);
+    	    }
+    	    return text;
+    	  });
+    	})
+    	.then(function(text) {
+    	  btn.disabled    = false;
+    	  btn.textContent = 'Submit Query';
+
+    	  if (text === 'Query Submitted Successfully!') {
+
+    	    document.getElementById('formView').style.display    = 'none';
+    	    document.getElementById('successView').style.display = 'block';
+
+    	    var secs = 3;
+    	    var note = document.getElementById('redirectNote');
+
+    	    var timer = setInterval(function() {
+    	      secs--;
+    	      note.textContent =
+    	        'Redirecting in ' + secs + ' second' + (secs !== 1 ? 's' : '') + '...';
+
+    	      if (secs <= 0) {
+    	        clearInterval(timer);
+    	        window.location.href = '/student.html';
+    	      }
+    	    }, 1000);
+
+    	  } else {
+    	    showError('Error: ' + text);
+    	  }
+    	})
+    	.catch(function(err) {
+    	  btn.disabled    = false;
+    	  btn.textContent = 'Submit Query';
+
+    	  showError(err.message || 'Something went wrong');
+    	});
+
+  }
+</script>
+
+</body>
+</html>
